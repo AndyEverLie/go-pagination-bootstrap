@@ -11,63 +11,63 @@ import (
 
 const tmpl string = `
 {{ if .HasPages }}
-<ul class="pagination pagination-sm">
-  {{ .GetPreviousButton "<" }}
+<ul class="pagination">
+  {{ .GetPreviousButton "Previous" }}
   {{ range .FirstPart }}
-    {{ . }}
+		{{ . }}
   {{ end }}
   {{ if len .MiddlePart }}
     {{ .GetDots }}
-	{{ range .MiddlePart }}
-	  {{ . }}
-	{{ end }}
+		{{ range .MiddlePart }}
+			{{ . }}
+		{{ end }}
   {{ end }}
   {{ if len .LastPart }}
-	{{ .GetDots }}
-	{{ range .LastPart }}
-	  {{ . }}
-	{{ end }}
+		{{ .GetDots }}
+		{{ range .LastPart }}
+			{{ . }}
+		{{ end }}
   {{ end }}
-  {{ .GetNextButton ">" }}
+  {{ .GetNextButton "Next" }}
 </ul>
 {{end}}
 `
 
 const onEachSide int = 3
 
-func (p *Pagination)FirstPart() []string {
+func (p *Pagination) FirstPart() []string {
 	return p.firstPart
 }
-func (p *Pagination)MiddlePart() []string {
+func (p *Pagination) MiddlePart() []string {
 	return p.middlePart
 }
-func (p *Pagination)LastPart() []string {
+func (p *Pagination) LastPart() []string {
 	return p.lastPart
 }
 func (p *Pagination) generate() {
 	if !p.HasPages() {
 		return
 	}
-	if p.TotalPages() < (onEachSide * 2 + 6) {    // 11页以内
+	if p.TotalPages() < (onEachSide*2 + 6) { // 11页以内
 		p.firstPart = p.getUrlRange(1, p.TotalPages())
-	}else {
+	} else {
 		window := onEachSide * 2
 		lastPage := p.TotalPages()
-		if p.currentPage < window {    // 靠近开头
-			p.firstPart = p.getUrlRange(1, window + 2)
-			p.lastPart = p.getUrlRange(lastPage - 1, lastPage)
-		}else if p.currentPage > (lastPage - window) {    // 靠近结尾
+		if p.currentPage < window { // 靠近开头
+			p.firstPart = p.getUrlRange(1, window+2)
+			p.lastPart = p.getUrlRange(lastPage-1, lastPage)
+		} else if p.currentPage > (lastPage - window) { // 靠近结尾
 			p.firstPart = p.getUrlRange(1, 2)
-			p.lastPart = p.getUrlRange(lastPage - (window + 2), lastPage)
-		}else {    // 在中间
+			p.lastPart = p.getUrlRange(lastPage-(window+2), lastPage)
+		} else { // 在中间
 			p.firstPart = p.getUrlRange(1, 2)
-			p.middlePart = p.getUrlRange(p.currentPage - onEachSide, p.currentPage + onEachSide)
-			p.lastPart = p.getUrlRange(lastPage - 1, lastPage)
+			p.middlePart = p.getUrlRange(p.currentPage-onEachSide, p.currentPage+onEachSide)
+			p.lastPart = p.getUrlRange(lastPage-1, lastPage)
 		}
 	}
 }
 
-func (p *Pagination)getUrlRange(start, end int) []string {
+func (p *Pagination) getUrlRange(start, end int) []string {
 	var ret []string
 	for i := start; i <= end; i++ {
 		ret = append(ret, p.getUrl(i, strconv.Itoa(i)))
@@ -75,7 +75,7 @@ func (p *Pagination)getUrlRange(start, end int) []string {
 	return ret
 }
 
-func (p *Pagination)getUrl(page int, text string) string {
+func (p *Pagination) getUrl(page int, text string) string {
 	strPage := strconv.Itoa(page)
 	if p.currentPage == page {
 		return p.GetActivePageWrapper(strPage)
@@ -85,7 +85,7 @@ func (p *Pagination)getUrl(page int, text string) string {
 		delete(params, "page")
 		strParam := ""
 		for k, v := range params {
-			strParam = strParam + "&" + k + "=" + v[0]    // TODO
+			strParam = strParam + "&" + k + "=" + v[0] // TODO
 		}
 
 		href := baseUrl.Host + "?page=" + strPage + strParam
@@ -94,29 +94,29 @@ func (p *Pagination)getUrl(page int, text string) string {
 }
 
 func (p *Pagination) GetActivePageWrapper(text string) string {
-	return "<li class=\"active\"><span>" + text + "</span></li>"
+	return "<li class=\"page-item active\"><a class=\"page-link\">" + text + "</a></li>"
 }
 func (p *Pagination) GetDisabledPageWrapper(text string) string {
-	return "<li class=\"disabled\"><span>" + text + "</span></li>"
+	return "<li class=\"page-item disabled\"><a class= \"page-link\">" + text + "</a></li>"
 }
 func (p *Pagination) GetAvailablePageWrapper(href, page string) string {
-	return "<li><a href=\"" + href + "\">" + page + "</a></li>"
+	return "<li class=\"page-item\"><a class=\"page-link\" href=\"" + href + "\">" + page + "</a></li>"
 }
 func (p *Pagination) GetDots() string {
-	return "<li class=\"disabled\"><span>...</span></li>"
+	return "<li class=\"disabled\"><span class=\"page-link\">...</span></li>"
 }
-func (p *Pagination)GetPreviousButton(text string) string { // "&laquo;"
+func (p *Pagination) GetPreviousButton(text string) string { // "&laquo;"
 	if p.currentPage <= 1 {
 		return p.GetDisabledPageWrapper(text)
 	}
 
-	return p.getUrl(p.currentPage - 1, "<")
+	return p.getUrl(p.currentPage-1, "Previous")
 }
-func (p *Pagination)GetNextButton(text string) string {    // &raquo;
+func (p *Pagination) GetNextButton(text string) string { // &raquo;
 	if p.currentPage == p.TotalPages() {
 		return p.GetDisabledPageWrapper(text)
 	}
-	return p.getUrl(p.currentPage + 1, ">")
+	return p.getUrl(p.currentPage+1, "Next")
 }
 
 // 生成html
